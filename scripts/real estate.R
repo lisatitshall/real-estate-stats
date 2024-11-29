@@ -136,3 +136,86 @@ barplot(town$Freq,
 
 #### end ####
 
+#### Probability ####
+#If a house is chosen at random what are the following probabilities:
+#1. The home is in Township 1 or has a pool
+#2. Given that it is in Township 3, that it has a pool
+#3. The home has a pool and is in Township 3
+
+#Firstly group the data to visualize and count
+pool <- real_estate %>% 
+  group_by(Twnship, Pool) %>% 
+  summarise(homes = n())
+View(pool)
+
+#probability that home is in Township 1
+town1 <- sum(pool[which(pool$Twnship=='1'), 3]) / nrow(real_estate)
+
+#probability that home has a pool
+has_pool <- sum(pool[which(pool$Pool=='1'), 3]) / nrow(real_estate)
+
+#probability that home is in Township 1 and has a pool
+town1_has_pool <- sum(pool[which(pool$Pool=='1' & pool$Twnship=='1'), 3]) / nrow(real_estate)
+
+# We use General Rule of Addition because events aren't mutually exclusive 
+probability_town1_or_pool <- town1 + has_pool - town1_has_pool 
+
+#probability that home is in town 3
+town3 <- sum(pool[which(pool$Twnship=='3'), 3]) / nrow(real_estate)
+
+#probability that home is in town 3 and has a pool
+town3_has_pool <- sum(pool[which(pool$Pool=='1' & pool$Twnship=='3'), 3]) / nrow(real_estate)
+
+#using conditional probability
+probability_has_pool_given_town_3 <- town3_has_pool / town3
+
+#already have third probability
+probability_has_pool_and_town3 <- town3_has_pool
+
+#If a house is chosen at random what are the following probabilities:
+#1. The home has a garage attached
+#2. The home doesn't have a garage attached, given it is in Township 5
+#3. The home has a garage attached and is in Township 3
+#4. The home does not have a garage attached or is in Township 2
+
+#group the data
+garages <- real_estate %>% 
+  group_by(Twnship, Garage) %>% 
+  summarise(homes = n())
+View(garages)
+
+probability_has_garage <- sum(garages[which(garages$Garage=='1'), 3]) / nrow(real_estate)
+
+
+#probability of being in Township 5
+town5 <- sum(garages[which(garages$Twnship=='5'), 3]) / nrow(real_estate)
+
+#probability of being in Township 5 and not having a garage
+town5_no_garage <- sum(
+  garages[which(garages$Twnship=='5' & garages$Garage=='0' ), 3]) / 
+  nrow(real_estate)
+
+#using conditional probability
+probability_no_garage_given_town5 <- town5_no_garage / town5
+
+#probability of having garage and being in town 3
+probability_garage_and_town3 <- sum(
+  garages[which(garages$Twnship=='3' & garages$Garage=='1' ), 3]) / 
+  nrow(real_estate)
+
+#probability of not having a garage attached using complement
+no_garage <- 1 - probability_has_garage
+
+#probability of being in town2
+town2 <- sum(garages[which(garages$Twnship=='2'), 3]) / nrow(real_estate)
+
+#probability of being in town 2 and not having a garage
+town2_no_garage <- sum(
+  garages[which(garages$Twnship=='2' & garages$Garage=='0'), 3]) / 
+  nrow(real_estate)
+
+#Events aren't mutually exclusive so use General Rule of Addition
+probability_town2_or_no_garage <- no_garage + town2 - town2_no_garage
+
+#### end #### 
+
