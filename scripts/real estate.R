@@ -89,6 +89,38 @@ mean_price + (4.5 * standard_deviation_price)
 mean_price - (2 * standard_deviation_price)
 mean_price + (2 * standard_deviation_price)
 
+#are there any outliers? 
+#look at boxplot, no outliers
+boxplot(real_estate$Price,
+        ylab = "Price (000k)")
+
+#1st and 3rd quartiles, $187k and $251k
+quantile(real_estate$Price, 
+         prob = c(.25,.75))
+
+#is there a relationship between price and size of home?
+#plot scatter with line, weak positive relationship
+plot(real_estate$Price,
+     real_estate$Size,
+     xlab = "Price (000k)",
+     ylab = "Size (f2)"
+)
+
+abline(lm(real_estate$Size ~ real_estate$Price),
+       col = 'blue',
+       lty = 'dashed')
+
+#what about price and distance from city centre
+#stronger inverse relationship
+plot(real_estate$Price,
+     real_estate$Distance,
+     xlab = "Price (000k)",
+     ylab = "Distance (miles)"
+)
+
+abline(lm(real_estate$Distance ~ real_estate$Price),
+       col = 'blue',
+       lty = 'dashed')
 
 #how many houses have been sold in each township?
 town <- as.data.frame(table(real_estate$Twnship)) %>%
