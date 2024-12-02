@@ -169,8 +169,9 @@ town3_has_pool <- sum(pool[which(pool$Pool=='1' & pool$Twnship=='3'), 3]) / nrow
 #using conditional probability
 probability_has_pool_given_town_3 <- town3_has_pool / town3
 
-#already have third probability
-probability_has_pool_and_town3 <- town3_has_pool
+#For third probability, events are dependent
+#use General Rule of Multiplication 
+probability_has_pool_and_town3 <- town3 * probability_has_pool_given_town_3
 
 #If a house is chosen at random what are the following probabilities:
 #1. The home has a garage attached
@@ -186,7 +187,6 @@ View(garages)
 
 probability_has_garage <- sum(garages[which(garages$Garage=='1'), 3]) / nrow(real_estate)
 
-
 #probability of being in Township 5
 town5 <- sum(garages[which(garages$Twnship=='5'), 3]) / nrow(real_estate)
 
@@ -198,10 +198,16 @@ town5_no_garage <- sum(
 #using conditional probability
 probability_no_garage_given_town5 <- town5_no_garage / town5
 
-#probability of having garage and being in town 3
-probability_garage_and_town3 <- sum(
+#probability of being in town 3 and having a garage
+town3_garage <- sum(
   garages[which(garages$Twnship=='3' & garages$Garage=='1' ), 3]) / 
   nrow(real_estate)
+
+#probability of being in town 3, given it has a garage
+probability_town3_given_garage <- town3_garage / probability_has_garage
+
+#probability of having garage and being in town 3, using General Rule
+probability_garage_and_town3 <- probability_has_garage * probability_town3_given_garage
 
 #probability of not having a garage attached using complement
 no_garage <- 1 - probability_has_garage
@@ -218,4 +224,49 @@ town2_no_garage <- sum(
 probability_town2_or_no_garage <- no_garage + town2 - town2_no_garage
 
 #### end #### 
+
+#### probability distributions ####
+
+#create a probability distribution for the number of bedrooms
+
+#group the data
+bedrooms <- real_estate %>% 
+  group_by(Bedrooms) %>% 
+  summarise(homes = n())
+View(bedrooms)
+
+#add probability column
+bedrooms <- bedrooms %>% 
+  mutate(probability = homes / nrow(real_estate))
+
+#calculate the mean
+mean_bedrooms <- sum(bedrooms$Bedrooms * bedrooms$probability)
+
+#calculate the standard deviation
+variance_bedrooms <- 
+  sum(((bedrooms$Bedrooms - mean_bedrooms) ^ 2) * bedrooms$probability)
+
+standard_deviation_bedrooms <- variance_bedrooms ^ 0.5
+standard_deviation_bedrooms
+
+#what is the probability of a house having a pool
+pool_probability <- sum(real_estate$Pool) / nrow
+
+#choose 10 homes, what's the probability that exactly one will have a pool
+#use binomial distribution 
+
+exactly_one_pool <- 
+  choose(10,1) * 
+  (pool_probability ^ 1) * 
+  ((1-pool_probability) ^ 9)
+
+#what's the probability that at least one will have a pool 
+at_least_one_pool <- 
+  1 - (choose(10,0) * 
+         (pool_probability ^ 0) * 
+         ((1-pool_probability) ^ 10)
+  )
+
+
+#### end ####
 
