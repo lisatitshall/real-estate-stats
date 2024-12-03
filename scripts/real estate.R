@@ -294,5 +294,23 @@ normal_approx_distance_between_18_22 <- pnorm(z_22) - pnorm(z_18)
 #22% is the actual
 between_18_22 <- sum(real_estate$Distance >= 18 & 
                        real_estate$Distance <= 22) / nrow(real_estate)
+
+#assume the 105 homes are the population 
+
+#choose a sample of 10 homes
+sample_10 <- real_estate[sample(1:nrow(real_estate), 10),]
+View(sample_10)
+
+#calculate mean and standard deviation of sample
+sample_10_mean <- mean(sample_10$Price)
+sample_10_standard_deviation <- sd(sample_10$Price)
+
+#what is the probability of the sample mean being at least this value
+sample_z_value <- (sample_10_mean - mean_price) / 
+  (standard_deviation_price / (10 ^ 0.5))
+
+#29%
+sample_probability <- pnorm(sample_z_value, lower.tail = FALSE)
+
 #### end ####
 
