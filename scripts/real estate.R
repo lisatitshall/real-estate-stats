@@ -9,7 +9,7 @@ library(moments)
 real_estate <- read_excel("data/GoodYearRealEstate.xls")
 
 #view the dataset
-View(real_estate)
+View(real_estate) 
 
 #examine the datatypes
 str(real_estate)
@@ -267,6 +267,32 @@ at_least_one_pool <-
          ((1-pool_probability) ^ 10)
   )
 
+# is the normal distribution a good approximation for price?
+#we calculated mean and standard deviation of price earlier
+mean_price
+standard_deviation_price
 
+#use normal distribution to estimate % of homes selling for more than £280k
+z <- (280 - mean_price) / standard_deviation_price
+over_280_normal_approx <- pnorm(z, lower.tail =  FALSE)
+
+# 11% 
+# in reality 13% of houses were sold for more than 280k
+over_280 <- sum(real_estate$Price > 280) / nrow(real_estate)
+
+#is the normal distribution a good approximation for distance?
+mean_distance <- mean(real_estate$Distance)
+standard_deviation_distance <- sd(real_estate$Distance)
+
+#use normal to estimate % of homes between 18 and 22 miles from city centre
+z_22 <- (22 - mean_distance) / standard_deviation_distance
+z_18 <- (18 - mean_distance) / standard_deviation_distance
+
+#18% is normal approximation
+normal_approx_distance_between_18_22 <- pnorm(z_22) - pnorm(z_18)
+
+#22% is the actual
+between_18_22 <- sum(real_estate$Distance >= 18 & 
+                       real_estate$Distance <= 22) / nrow(real_estate)
 #### end ####
 
