@@ -314,3 +314,25 @@ sample_probability <- pnorm(sample_z_value, lower.tail = FALSE)
 
 #### end ####
 
+#### confidence intervals ####
+#develop a 95% confidence interval for the mean selling price
+#assume the data we have is a sample
+
+#we've already calculated the mean and standard deviation
+mean_price
+standard_deviation_price
+
+#we don't know the standard deviation of the population so use t distribution
+#because our sample is > 30 we can assume normality
+#manually using t-value from table
+lower_bound <- mean_price - ( 1.984  * (standard_deviation_price / (nrow(real_estate)^0.5)))
+upper_bound <- mean_price + ( 1.984  * (standard_deviation_price / (nrow(real_estate)^0.5)))
+
+#using R to check
+t.test(real_estate$Price, conf.level = 0.95)
+
+#95% confidence interval for distance away from city centre
+t.test(real_estate$Distance, conf.level = 0.95)
+
+#### end ####
+
