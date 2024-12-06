@@ -1,7 +1,6 @@
 #load the required packages
 library(tidyverse)
 library(readxl)
-library(dplyr)
 #skewness
 library(moments)
 
@@ -69,7 +68,7 @@ plot(density(real_estate$Price),
      main = "Price Distribution",
      xlab = "Price")
 
-#assess skew, 0.46, mild positive skew, use median
+#assess skew, 0.46, mild positive skew
 skewness(real_estate$Price)
 
 #assess range and standard deviation
@@ -122,17 +121,6 @@ abline(lm(real_estate$Distance ~ real_estate$Price),
        col = 'blue',
        lty = 'dashed')
 
-#how many houses have been sold in each township?
-town <- as.data.frame(table(real_estate$Twnship)) %>%
-  rename("Township" = Var1 )
-
-#plot as a bar chart
-barplot(town$Freq,
-        names = town$Township,
-        xlab = "Township",
-        ylab = "Frequency")
-
-#township 4 is most popular
 
 #### end ####
 
@@ -250,7 +238,7 @@ standard_deviation_bedrooms <- variance_bedrooms ^ 0.5
 standard_deviation_bedrooms
 
 #what is the probability of a house having a pool
-pool_probability <- sum(real_estate$Pool) / nrow
+pool_probability <- sum(real_estate$Pool) / nrow(real_estate)
 
 #choose 10 homes, what's the probability that exactly one will have a pool
 #use binomial distribution 
@@ -280,21 +268,6 @@ over_280_normal_approx <- pnorm(z, lower.tail =  FALSE)
 # in reality 13% of houses were sold for more than 280k
 over_280 <- sum(real_estate$Price > 280) / nrow(real_estate)
 
-#is the normal distribution a good approximation for distance?
-mean_distance <- mean(real_estate$Distance)
-standard_deviation_distance <- sd(real_estate$Distance)
-
-#use normal to estimate % of homes between 18 and 22 miles from city centre
-z_22 <- (22 - mean_distance) / standard_deviation_distance
-z_18 <- (18 - mean_distance) / standard_deviation_distance
-
-#18% is normal approximation
-normal_approx_distance_between_18_22 <- pnorm(z_22) - pnorm(z_18)
-
-#22% is the actual
-between_18_22 <- sum(real_estate$Distance >= 18 & 
-                       real_estate$Distance <= 22) / nrow(real_estate)
-
 #assume the 105 homes are the population 
 
 #choose a sample of 10 homes
@@ -314,7 +287,7 @@ sample_probability <- pnorm(sample_z_value, lower.tail = FALSE)
 
 #### end ####
 
-#### confidence intervals ####
+#### confidence intervals and hypothesis testing####
 #develop a 95% confidence interval for the mean selling price
 #assume the data we have is a sample
 
@@ -325,14 +298,34 @@ standard_deviation_price
 #we don't know the standard deviation of the population so use t distribution
 #because our sample is > 30 we can assume normality
 #manually using t-value from table
-lower_bound <- mean_price - ( 1.984  * (standard_deviation_price / (nrow(real_estate)^0.5)))
-upper_bound <- mean_price + ( 1.984  * (standard_deviation_price / (nrow(real_estate)^0.5)))
+lower_bound <- mean_price - 
+  ( 1.984  * (standard_deviation_price / (nrow(real_estate)^0.5)))
+upper_bound <- mean_price + 
+  ( 1.984  * (standard_deviation_price / (nrow(real_estate)^0.5)))
 
 #using R to check
 t.test(real_estate$Price, conf.level = 0.95)
 
-#95% confidence interval for distance away from city centre
-t.test(real_estate$Distance, conf.level = 0.95)
+#suggested mean price in the area is more than $220k
+#can we conclude this from our sample?
+
+#one sided hypothesis test where null hypothesis <= 220k
+#don't know standard deviation of population
+#test at the .01 significance level
+#reject if t > ~2.364
+
+t_score <- (mean_price - 220) / 
+  (standard_deviation_price / (nrow(real_estate) ^ 0.5))
+
+#t = 0.23, don't reject the null hypothesis. We can't say mean > 220k
+#check using R
+t.test(real_estate$Price, 
+       alternative = c("greater"),
+       mu = 220,
+       conf.level = 0.99
+)
 
 #### end ####
+
+
 
