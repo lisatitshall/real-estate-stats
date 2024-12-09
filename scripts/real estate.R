@@ -325,6 +325,81 @@ t.test(real_estate$Price,
        conf.level = 0.99
 )
 
+#at .05 significance level can we conclude a difference in
+#mean selling price of homes with and without a pool
+
+#samples are independent
+#how many houses do/don't have a pool - 38/67
+#samples are bigger than 30 so normal approximation holds
+houses_with_pool <- real_estate[which(real_estate$Pool=='1'),]
+houses_without_pool <- real_estate[which(real_estate$Pool=='0'),]
+
+#don't know population standard deviation 
+#are the variances of both samples approximately equal, no
+pool_variance <- var(houses_with_pool$Price)
+without_pool_variance <- var(houses_without_pool$Price)
+
+#test this statistically, reject null, variances are unequal
+var.test(houses_with_pool$Price, houses_without_pool$Price)
+
+#use t test with variances unequal(Welch)
+#reject null
+#there's a difference in mean price for houses with/without pool
+t.test(houses_with_pool$Price,
+       houses_without_pool$Price,
+       var.equal = FALSE,
+       conf.level = 0.95)
+
+#at .05 significance level can we conclude a difference in
+#mean selling price of homes with and without a garage
+
+#samples are independent
+#how many houses do/don't have a garage - 71/34
+#samples are bigger than 30 so normal approximation holds
+houses_with_garage <- real_estate[which(real_estate$Garage=='1'),]
+houses_without_garage <- real_estate[which(real_estate$Garage=='0'),]
+
+#population standard deviation is unknown
+#are the variances of both samples approximately equal, no
+garage_variance <- var(houses_with_garage$Price)
+without_garage_variance <- var(houses_without_garage$Price)
+
+#test this statistically, reject null, variances are unequal
+var.test(houses_with_garage$Price, houses_without_garage$Price)
+
+#use t test with variances unequal(Welch)
+#reject null
+#there's a difference in mean price for houses with/without garage
+t.test(houses_with_garage$Price,
+       houses_without_garage$Price,
+       var.equal = FALSE,
+       conf.level = 0.95)
+
+#at 0.5 significance level can we conclude a difference in mean price
+#between houses in Township 1 and Township 2
+
+#samples are independent
+#how many houses are in Township 1/2 - 15/20
+#samples are small, we'd have to assume population is normally distributed
+#with house prices this seems sensible
+houses_township1 <- real_estate[which(real_estate$Twnship=='1'),]
+houses_township2 <- real_estate[which(real_estate$Twnship=='2'),]
+
+#population standard deviation is unknown
+#are the variances of both samples approximately equal
+township1_variance <- var(houses_township1$Price)
+township2_variance <- var(houses_township2$Price)
+
+#test statistically, don't reject null, variances are equal
+var.test(houses_township1$Price, houses_township2$Price)
+
+#use t-test
+#reject null, difference in mean price of Township 1 and 2
+t.test(houses_township1$Price,
+       houses_township2$Price,
+       var.equal = TRUE,
+       conf.level = 0.95)
+
 #### end ####
 
 
