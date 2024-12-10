@@ -15,7 +15,7 @@ str(real_estate)
 
 #change selected datatypes
 real_estate$Bedrooms <- as.integer(real_estate$Bedrooms) 
-real_estate$Twnship <- as.integer(real_estate$Twnship) 
+real_estate$Twnship <- as.factor(real_estate$Twnship) 
 
 #summarize the dataset
 summary(real_estate)
@@ -399,6 +399,50 @@ t.test(houses_township1$Price,
        houses_township2$Price,
        var.equal = TRUE,
        conf.level = 0.95)
+
+#at 0.02 significance level, is there a difference in the variability
+#of house prices that do/don't have a pool (similar calculated before)
+
+#to test we use the F statistic
+F <- without_pool_variance / pool_variance
+
+#f critical value
+f_critical <- qf(0.01, 66, 37, lower.tail = FALSE)
+
+#F is larger than f critical so reject the null, there's a variance difference
+#test using R
+var.test(houses_without_pool$Price, 
+         houses_with_pool$Price, 
+         conf.level = 0.98)
+
+#at the 0.05 significance level is there a difference in the mean
+#selling price of homes among five townships
+
+#assumptions for ANOVA:
+#independent populations - yes, different Townships
+#populations follow normal - have to assume this because samples are too small
+#populations have equal standard deviation - need to check
+#we already have township 1 and 2 data, get the rest
+houses_township3 <- real_estate[which(real_estate$Twnship=='3'),]
+houses_township4 <- real_estate[which(real_estate$Twnship=='4'),]
+houses_township5 <- real_estate[which(real_estate$Twnship=='5'),]
+
+township3_variance <- var(houses_township3$Price)
+township4_variance <- var(houses_township4$Price)
+township5_variance <- var(houses_township5$Price)
+
+#variances look different, test for the largest difference
+#accept null, variances are equal
+#change numbers to compare the rest (just in case)
+var.test(houses_township4$Price, 
+         houses_township5$Price, 
+         conf.level = 0.95)
+
+#can't reject the null in any case, variances are equal
+#proceed with anova
+#p-value is 0.2 so we can't reject the null, no difference in mean
+one_way_anova <- aov(Price ~ Twnship, data = real_estate)
+summary(one_way_anova)
 
 #### end ####
 
