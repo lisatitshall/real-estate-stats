@@ -16,11 +16,53 @@ str(real_estate)
 #change selected datatypes
 real_estate$Bedrooms <- as.integer(real_estate$Bedrooms) 
 real_estate$Twnship <- as.factor(real_estate$Twnship) 
+real_estate$Pool <- as.logical(real_estate$Pool)
+real_estate$Garage <- as.logical(real_estate$Garage)
 
-#summarize the dataset
-summary(real_estate)
+#plot to see all relationships
+#stand outs:
+#weak negative relationship between distance from town and price
+#price generally higher if house has a garage
+plot(real_estate)
+
+#plot individual / pairs of variables
+plot(real_estate$Price) # quantitative variable, plotted against index
+plot(real_estate$Twnship) # categorical variable, bar chart
+plot(real_estate$Price, real_estate$Distance) # two quant variables, scatter
+#one quant, one category, boxplots
+plot(real_estate$Twnship, 
+     real_estate$Price,
+     main = "Houses Prices by Township", 
+     xlab = "Township",
+     ylab = "Price (000k)")
+
+
+#barchart of homes with/without pool
+pools_table <- table(real_estate$Pool)
+barplot(pools_table,
+        xlab = "Has pool",
+        ylab = "Count of houses"
+        )
+
+#price distribution, frequency version
+hist(real_estate$Price, 
+     xlab = "Price (000k)", 
+     main = "Price Distribution")
+
+#price distribution, density version 
+hist(real_estate$Price, 
+     xlab = "Price (000k)", 
+     main = "Price Distribution",
+     freq = FALSE
+     )
+#add normal to see what it would look like
+curve(dnorm(x, mean = mean(real_estate$Price), sd = sd(real_estate$Price)),
+      add = TRUE, 
+      col = "red")
 
 #### Descriptive Statistics ####
+#summarize whole dataset
+summary(real_estate)
 
 #investigate the price column
 summary(real_estate$Price)
@@ -62,11 +104,7 @@ plot(x_breaks,
 mean_price <- mean(real_estate$Price)
 median_price <- median(real_estate$Price)
 
-#mean is slightly higher suggesting slight positive skew
-#let's look at the distribution
-plot(density(real_estate$Price),
-     main = "Price Distribution",
-     xlab = "Price")
+#mean is slightly higher confirming slight positive skew observed earlier
 
 #assess skew, 0.46, mild positive skew
 skewness(real_estate$Price)
@@ -140,10 +178,10 @@ View(pool)
 town1 <- sum(pool[which(pool$Twnship=='1'), 3]) / nrow(real_estate)
 
 #probability that home has a pool
-has_pool <- sum(pool[which(pool$Pool=='1'), 3]) / nrow(real_estate)
+has_pool <- sum(pool[which(pool$Pool==TRUE), 3]) / nrow(real_estate)
 
 #probability that home is in Township 1 and has a pool
-town1_has_pool <- sum(pool[which(pool$Pool=='1' & pool$Twnship=='1'), 3]) / nrow(real_estate)
+town1_has_pool <- sum(pool[which(pool$Pool==TRUE & pool$Twnship=='1'), 3]) / nrow(real_estate)
 
 # We use General Rule of Addition because events aren't mutually exclusive 
 probability_town1_or_pool <- town1 + has_pool - town1_has_pool 
@@ -152,7 +190,7 @@ probability_town1_or_pool <- town1 + has_pool - town1_has_pool
 town3 <- sum(pool[which(pool$Twnship=='3'), 3]) / nrow(real_estate)
 
 #probability that home is in town 3 and has a pool
-town3_has_pool <- sum(pool[which(pool$Pool=='1' & pool$Twnship=='3'), 3]) / nrow(real_estate)
+town3_has_pool <- sum(pool[which(pool$Pool==TRUE & pool$Twnship=='3'), 3]) / nrow(real_estate)
 
 #using conditional probability
 probability_has_pool_given_town_3 <- town3_has_pool / town3
@@ -173,14 +211,14 @@ garages <- real_estate %>%
   summarise(homes = n())
 View(garages)
 
-probability_has_garage <- sum(garages[which(garages$Garage=='1'), 3]) / nrow(real_estate)
+probability_has_garage <- sum(garages[which(garages$Garage==TRUE), 3]) / nrow(real_estate)
 
 #probability of being in Township 5
 town5 <- sum(garages[which(garages$Twnship=='5'), 3]) / nrow(real_estate)
 
 #probability of being in Township 5 and not having a garage
 town5_no_garage <- sum(
-  garages[which(garages$Twnship=='5' & garages$Garage=='0' ), 3]) / 
+  garages[which(garages$Twnship=='5' & garages$Garage==FALSE ), 3]) / 
   nrow(real_estate)
 
 #using conditional probability
@@ -188,7 +226,7 @@ probability_no_garage_given_town5 <- town5_no_garage / town5
 
 #probability of being in town 3 and having a garage
 town3_garage <- sum(
-  garages[which(garages$Twnship=='3' & garages$Garage=='1' ), 3]) / 
+  garages[which(garages$Twnship=='3' & garages$Garage==TRUE ), 3]) / 
   nrow(real_estate)
 
 #probability of being in town 3, given it has a garage
@@ -205,7 +243,7 @@ town2 <- sum(garages[which(garages$Twnship=='2'), 3]) / nrow(real_estate)
 
 #probability of being in town 2 and not having a garage
 town2_no_garage <- sum(
-  garages[which(garages$Twnship=='2' & garages$Garage=='0'), 3]) / 
+  garages[which(garages$Twnship=='2' & garages$Garage==FALSE), 3]) / 
   nrow(real_estate)
 
 #Events aren't mutually exclusive so use General Rule of Addition
@@ -331,8 +369,8 @@ t.test(real_estate$Price,
 #samples are independent
 #how many houses do/don't have a pool - 38/67
 #samples are bigger than 30 so normal approximation holds
-houses_with_pool <- real_estate[which(real_estate$Pool=='1'),]
-houses_without_pool <- real_estate[which(real_estate$Pool=='0'),]
+houses_with_pool <- real_estate[real_estate$Pool==TRUE,]
+houses_without_pool <- real_estate[real_estate$Pool==FALSE,]
 
 #don't know population standard deviation 
 #are the variances of both samples approximately equal, no
@@ -356,8 +394,8 @@ t.test(houses_with_pool$Price,
 #samples are independent
 #how many houses do/don't have a garage - 71/34
 #samples are bigger than 30 so normal approximation holds
-houses_with_garage <- real_estate[which(real_estate$Garage=='1'),]
-houses_without_garage <- real_estate[which(real_estate$Garage=='0'),]
+houses_with_garage <- real_estate[which(real_estate$Garage==TRUE),]
+houses_without_garage <- real_estate[which(real_estate$Garage==FALSE),]
 
 #population standard deviation is unknown
 #are the variances of both samples approximately equal, no
