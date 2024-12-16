@@ -6,7 +6,7 @@ Explore a real estate dataset using EDA and statistics. The goal is to investiga
 ### Steps taken
 
 - Step 1: Import the data from Excel and explore datatypes
-- Step 2: Plot data to look at price distibution and see which attributes seem to affect price
+- Step 2: Plot data to look at price distribution and see which attributes seem to affect price
 - Step 3: Use descriptive statistics to add numerical insight to plots
 - Step 4: Assess whether the normal distribution is a good approximation for price
 - Step 5: Construct a 95% confidence interval for price and use one sample hypothesis testing to test a statement about the mean price
@@ -31,10 +31,30 @@ The number of bedrooms and bathrooms only has a noticeable impact on price at th
 
 Other relationships were more surprising. For example, homes with pools had a lower median and the size only seemed to have a weak positive relationship with price.
 
-![image](https://github.com/user-attachments/assets/86ccf4f1-2710-428e-a76f-f40ffe4195d4)
 ![image](https://github.com/user-attachments/assets/dc1b4205-732b-4139-a53b-fd1633a2b2ed)
+![image](https://github.com/user-attachments/assets/86ccf4f1-2710-428e-a76f-f40ffe4195d4)
 
-### [3] 
+There wasn't a noticeable relationship between price and township. 
+
+![image](https://github.com/user-attachments/assets/90a11ade-5883-4c2e-9621-daba2e214789)
+
+
+### [3] Statistical tests show there's evidence to conclude having a garage or a pool affects house price
+Performing a two sample t-test allowed us to reject the null hypothesis that the mean price between homes with and without a garage is the same (see results below). From the boxplot above we can see that homes with a garage have a higher mean. Note: we used Welch's test where variances were unequal. 
+
+![image](https://github.com/user-attachments/assets/69d7fcd5-14af-4d88-a50e-709d5d63ddd6)
+
+There was also a statistically significant result for homes with and without a pool (see results below). However, in this case the opposite was true. Homes with a pool had a smaller mean than homes without. 
+
+![image](https://github.com/user-attachments/assets/04cb8275-d893-4ffd-87b5-270a2c0b177b)
+
+Finally, an ANOVA test confirmed what we observed in the boxplot above. There wasn't enough evidence to reject the null hypothesis that the mean price isn't affected by township. 
+
+![image](https://github.com/user-attachments/assets/284e3b4c-5886-4205-811f-000125a4053b)
+
+
+
+
 
 
 
