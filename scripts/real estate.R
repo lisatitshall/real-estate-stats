@@ -35,6 +35,33 @@ plot(real_estate$Twnship,
      main = "Houses Prices by Township", 
      xlab = "Township",
      ylab = "Price (000k)")
+#more bedrooms generally means higher price but only 4 homes with 7/8 bedrooms
+plot(as.factor(real_estate$Bedrooms), 
+     real_estate$Price,
+     main = "Houses Prices by Number of Bedrooms", 
+     xlab = "Number of Bedrooms",
+     ylab = "Price (000k)")
+
+#surprisingly houses without pool have a higher median
+plot(as.factor(real_estate$Pool), 
+     real_estate$Price,
+     main = "Houses Prices by Pool", 
+     xlab = "Has Pool",
+     ylab = "Price (000k)")
+
+#homes with a garage have a higher median
+plot(as.factor(real_estate$Garage), 
+     real_estate$Price,
+     main = "Houses Prices by Garage", 
+     xlab = "Has Garage",
+     ylab = "Price (000k)")
+
+#With 3 bathrooms the median price is higher, the rest are similar
+plot(as.factor(real_estate$Baths), 
+     real_estate$Price,
+     main = "Houses Prices by Number of Bathrooms", 
+     xlab = "Number of Bathrooms",
+     ylab = "Price (000k)")
 
 
 #barchart of homes with/without pool
