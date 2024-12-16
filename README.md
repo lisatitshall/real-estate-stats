@@ -22,6 +22,7 @@ The mean house price is $221k and the median house price is $213k suggesting a m
 
 ### [2] Distance from town and having a garage seem to impact price
 Plotting all variables against price showed that homes closer to town and homes with a garage seemed to be worth more (see plots below). 
+
 ![image](https://github.com/user-attachments/assets/d1b17c77-ebb0-49fc-b68e-7ef9d56e372d)
 ![image](https://github.com/user-attachments/assets/c49c67d1-f36a-40e5-94f0-bb0069a73661)
 
