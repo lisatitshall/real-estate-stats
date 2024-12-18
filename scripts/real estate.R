@@ -307,11 +307,13 @@ pool_probability <- sum(real_estate$Pool) / nrow(real_estate)
 
 #choose 10 homes, what's the probability that exactly one will have a pool
 #use binomial distribution 
-
 exactly_one_pool <- 
   choose(10,1) * 
   (pool_probability ^ 1) * 
   ((1-pool_probability) ^ 9)
+
+#check using r
+dbinom(x=1, size = 10, prob = pool_probability)
 
 #what's the probability that at least one will have a pool 
 at_least_one_pool <- 
@@ -319,6 +321,9 @@ at_least_one_pool <-
          (pool_probability ^ 0) * 
          ((1-pool_probability) ^ 10)
   )
+
+#check using r
+sum(dbinom(x= 1:10, size = 10, prob = pool_probability))
 
 # is the normal distribution a good approximation for price?
 #we calculated mean and standard deviation of price earlier
@@ -328,6 +333,9 @@ standard_deviation_price
 #use normal distribution to estimate % of homes selling for more than £280k
 z <- (280 - mean_price) / standard_deviation_price
 over_280_normal_approx <- pnorm(z, lower.tail =  FALSE)
+
+#same as above because default for pnorm is mean 0, sd 1
+pnorm(280, mean = mean_price, sd = standard_deviation_price, lower.tail = F)
 
 # 11% 
 # in reality 13% of houses were sold for more than 280k
@@ -368,7 +376,7 @@ lower_bound <- mean_price -
 upper_bound <- mean_price + 
   ( 1.984  * (standard_deviation_price / (nrow(real_estate)^0.5)))
 
-#using R to check
+#using R to check (don't need the test part)
 t.test(real_estate$Price, conf.level = 0.95)
 
 #suggested mean price in the area is more than $220k
@@ -494,6 +502,7 @@ houses_township5 <- real_estate[which(real_estate$Twnship=='5'),]
 
 township3_variance <- var(houses_township3$Price)
 township4_variance <- var(houses_township4$Price)
+
 township5_variance <- var(houses_township5$Price)
 
 #variances look different, test for the largest difference
@@ -508,6 +517,19 @@ var.test(houses_township4$Price,
 #p-value is 0.2 so we can't reject the null, no difference in mean
 one_way_anova <- aov(Price ~ Twnship, data = real_estate)
 summary(one_way_anova)
+
+#moderate negative relationship between distance and price
+#moderate positive between price and size
+cor(real_estate %>% select(Price, Distance, Size))
+
+#is there any significance?
+#yes at 95%
+cor.test(real_estate$Price, 
+         real_estate$Distance)
+#yes at 95%
+cor.test(real_estate$Price, 
+         real_estate$Size)
+
 
 #### end ####
 
