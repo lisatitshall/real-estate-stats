@@ -12,6 +12,7 @@ Explore a real estate dataset using EDA and statistics. The goal is to investiga
 - Step 5: Construct a 95% confidence interval for price and use one sample hypothesis testing to test a statement about the mean price
 - Step 6: Use two sample hypothesis tests to see whether homes with a pool or garage have a higher price
 - Step 7: Use ANOVA to see whether mean house price differs by township
+- Step 8: Use correlation to assess the relationship between price, size and distance from town
 
 ## Findings
 
@@ -49,13 +50,13 @@ There was also a statistically significant result for homes with and without a p
 
 ![image](https://github.com/user-attachments/assets/04cb8275-d893-4ffd-87b5-270a2c0b177b)
 
-Finally, an ANOVA test confirmed what we observed in the boxplot above. There wasn't enough evidence to reject the null hypothesis that the mean price isn't affected by township. 
+An ANOVA test confirmed what we observed in the boxplot above. There wasn't enough evidence to reject the null hypothesis that the mean price isn't affected by township. 
 
 ![image](https://github.com/user-attachments/assets/284e3b4c-5886-4205-811f-000125a4053b)
 
+Correlation tests showed statistically significant relationships between price/distance and price/size. However, both of the relationships are moderate rather than strong (see below).
 
+![image](https://github.com/user-attachments/assets/2bf76d25-1689-4290-963b-766452affb3d)
 
-
-
-
+![image](https://github.com/user-attachments/assets/4135a6b0-ff63-40f1-932e-8ef8af9a101c)
 
