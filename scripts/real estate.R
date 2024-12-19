@@ -1,8 +1,11 @@
 #load the required packages
 library(tidyverse)
+library(tidymodels)
 library(readxl)
 #skewness
 library(moments)
+#Bruesch-Pagan test for heteroscedasticity
+library(lmtest)
 
 #read in the real estate data
 real_estate <- read_excel("data/GoodYearRealEstate.xls")
@@ -518,6 +521,28 @@ var.test(houses_township4$Price,
 one_way_anova <- aov(Price ~ Twnship, data = real_estate)
 summary(one_way_anova)
 
+#is there correlation between distance/price and size
+#to use Pearson's correlation we assume normal
+#plot histogram of distance/price (already seen size ~ normal)
+ggplot(real_estate, aes(x = Distance)) +
+  geom_histogram(aes(y = after_stat(density))) +
+  stat_function(fun=dnorm, 
+                args = list(mean = mean(real_estate$Distance),
+                            sd = sd(real_estate$Distance)))
+                                       
+median(real_estate$Distance)                                       
+mean(real_estate$Distance)
+
+ggplot(real_estate, aes(x = Size)) +
+  geom_histogram(aes(y = after_stat(density))) +
+  stat_function(fun=dnorm, 
+                args = list(mean = mean(real_estate$Size),
+                            sd = sd(real_estate$Size)))
+
+median(real_estate$Size)                                       
+mean(real_estate$Size)
+
+#both look approx normal, use Pearson's R
 #moderate negative relationship between distance and price
 #moderate positive between price and size
 cor(real_estate %>% select(Price, Distance, Size))
@@ -530,6 +555,84 @@ cor.test(real_estate$Price,
 cor.test(real_estate$Price, 
          real_estate$Size)
 
+
+#### end ####
+
+#### linear regression model #### 
+#Aim to predict price based on combo of other variables
+#From analysis so far we've seen the following with price
+#moderate/strong relationship: distance, garage, size, pool
+#no/weak relationship: baths, bedrooms, township
+
+#is there any correlation between those 4 variables
+#nothing immediately obvious, investigate garage/pool more
+plot(real_estate %>% select(Distance, Garage, Pool, Size))
+
+#no trend
+ggplot(real_estate,
+       aes(x = Garage, fill = Pool)) + 
+  geom_bar() 
+
+#are there any outliers in size and distance that could 
+#affect the analysis, 2 for size but not overly concerned
+ggplot(real_estate,
+       aes(x = Size)) + 
+  geom_boxplot() 
+
+ggplot(real_estate,
+       aes(x = Distance)) + 
+  geom_boxplot() 
+
+#normalize data because we have different scales
+#split data into train and test
+set.seed(1353)
+split <- initial_split(real_estate)
+train <- training(split)
+test <- testing(split)
+
+#create recipe, add preprocessing step to normalize
+recipe <- recipe(
+  Price ~ Distance + Size + Garage + Pool,
+  data = train
+) %>%
+  step_normalize(Distance, Size)
+
+#set up linear regression model
+linear_model <- linear_reg() 
+
+#set up workflow
+workflow <- workflow() %>% 
+  add_model(linear_model) %>%
+  add_recipe(recipe)
+
+#fit model on training set
+model_fit <- workflow %>% fit(data = train)
+
+#review model, most p-values are low enough, distance borderline at .09
+(model_results <- model_fit %>% extract_fit_parsnip() %>% tidy())
+
+#add predictions to training set
+train_augment <-augment(model_fit, train)
+
+#see model statistics
+glance(model_fit)
+
+#alternative way to calculate r2, 48% of variation explained by model
+rsq(train_augment, truth = Price, estimate = .pred)
+
+#looks like heteroscedasticity
+ggplot(train_augment, aes(x = .pred, y=.resid)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 0, col = "red")
+
+#test statistically, p 0.0595
+bptest( Price ~ Distance + Size + Garage + Pool, data = train)
+
+#are residuals normally distributed? looks fine
+qqnorm(train_augment$.resid, pch = 1, frame = FALSE)
+qqline(train_augment$.resid, col = "blue", lwd = 2)
+
+#heteroscedasticity is a problem, need to fix
 
 #### end ####
 
