@@ -573,8 +573,8 @@ ggplot(real_estate,
        aes(x = Garage, fill = Pool)) + 
   geom_bar() 
 
-#are there any outliers in size and distance that could 
-#affect the analysis, 2 for size but not overly concerned
+#are there any outliers in size and distance that could affect analysis
+#2 for size but not overly concerned
 ggplot(real_estate,
        aes(x = Size)) + 
   geom_boxplot() 
@@ -590,49 +590,34 @@ split <- initial_split(real_estate)
 train <- training(split)
 test <- testing(split)
 
-#create recipe, add preprocessing step to normalize
-recipe <- recipe(
-  Price ~ Distance + Size + Garage + Pool,
-  data = train
-) %>%
-  step_normalize(Distance, Size)
+#standardize size and distance
+train$Size <- scale(train$Size)
+train$Distance <- scale(train$Distance)
 
-#set up linear regression model
-linear_model <- linear_reg() 
-
-#set up workflow
-workflow <- workflow() %>% 
-  add_model(linear_model) %>%
-  add_recipe(recipe)
-
-#fit model on training set
-model_fit <- workflow %>% fit(data = train)
+#fit a linear model
+linear_model <- lm(Price ~ Distance + Size + Garage + Pool,
+                      data = train)
 
 #review model, most p-values are low enough, distance borderline at .09
-(model_results <- model_fit %>% extract_fit_parsnip() %>% tidy())
+#overall low p-value shows at least one independent variable has non-zero coef
+#48% of variance in price explained by model
+#33k RSE, roughly the average error, seems high
+summary(linear_model)
 
-#add predictions to training set
-train_augment <-augment(model_fit, train)
+#plot to examine residuals
+par(mfrow = c(2,2)) 
+plot(linear_model)
 
-#see model statistics
-glance(model_fit)
+#first graph looks like non linearity and heteroscedasticity 
+#second graph is OK, approx normal
+#standardized residuals bigger than 3 are outliers, no evidence of that
 
-#alternative way to calculate r2, 48% of variation explained by model
-rsq(train_augment, truth = Price, estimate = .pred)
-
-#looks like heteroscedasticity
-ggplot(train_augment, aes(x = .pred, y=.resid)) +
-  geom_point() +
-  geom_abline(intercept = 0, slope = 0, col = "red")
-
-#test statistically, p 0.0595
+#test heteroscedasticity statistically, p 0.0595
 bptest( Price ~ Distance + Size + Garage + Pool, data = train)
 
-#are residuals normally distributed? looks fine
-qqnorm(train_augment$.resid, pch = 1, frame = FALSE)
-qqline(train_augment$.resid, col = "blue", lwd = 2)
-
-#heteroscedasticity is a problem, need to fix
+#non linearity / heteroscedasticity is a problem, need to investigate solutions
+#reset grid
+par(mfrow = c(1,1))
 
 #### end ####
 
