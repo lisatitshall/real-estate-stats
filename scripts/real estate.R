@@ -90,6 +90,24 @@ curve(dnorm(x, mean = mean(real_estate$Price), sd = sd(real_estate$Price)),
       add = TRUE, 
       col = "red")
 
+#does log transform look more symmetric?
+ggplot(real_estate, aes(x = Price)) + 
+  geom_histogram(aes(y = after_stat(density)), bins = 10) +
+  stat_function(fun = dnorm, 
+                args = list(
+                  mean = mean(real_estate$Price), 
+                  sd = sd(real_estate$Price)), 
+                colour = "red")
+
+
+ggplot(real_estate, aes(x = log10(Price))) + 
+  geom_histogram(aes(y = after_stat(density)), bins = 10) +
+  stat_function(fun = dnorm, 
+                args = list(
+                  mean = mean(log10(real_estate$Price)), 
+                  sd = sd(log10(real_estate$Price))), 
+                colour = "red") 
+
 #### Descriptive Statistics ####
 #summarize whole dataset
 summary(real_estate)
@@ -616,6 +634,8 @@ plot(linear_model)
 bptest( Price ~ Distance + Size + Garage + Pool, data = train)
 
 #non linearity / heteroscedasticity is a problem, need to investigate solutions
+#look at log transformation of price
+#try nonlinear regression
 #reset grid
 par(mfrow = c(1,1))
 
