@@ -6,6 +6,7 @@ library(readxl)
 library(moments)
 #Bruesch-Pagan test for heteroscedasticity
 library(lmtest)
+library(tree)
 
 #read in the real estate data
 real_estate <- read_excel("data/GoodYearRealEstate.xls")
@@ -32,6 +33,7 @@ plot(real_estate)
 plot(real_estate$Price) # quantitative variable, plotted against index
 plot(real_estate$Twnship) # categorical variable, bar chart
 plot(real_estate$Price, real_estate$Distance) # two quant variables, scatter
+plot(real_estate$Price, real_estate$Size) # two quant variables, scatter
 #one quant, one category, boxplots
 plot(real_estate$Twnship, 
      real_estate$Price,
@@ -586,7 +588,7 @@ cor.test(real_estate$Price,
 #nothing immediately obvious, investigate garage/pool more
 plot(real_estate %>% select(Distance, Garage, Pool, Size))
 
-#no trend
+#no trend between garage and pool
 ggplot(real_estate,
        aes(x = Garage, fill = Pool)) + 
   geom_bar() 
@@ -617,8 +619,7 @@ linear_model <- lm(Price ~ Distance + Size + Garage + Pool,
                       data = train)
 
 #review model, most p-values are low enough, distance borderline at .09
-#overall low p-value shows at least one independent variable has non-zero coef
-#48% of variance in price explained by model
+#Only 48% of variance in price explained by model
 #33k RSE, roughly the average error, seems high
 summary(linear_model)
 
@@ -626,18 +627,107 @@ summary(linear_model)
 par(mfrow = c(2,2)) 
 plot(linear_model)
 
-#first graph looks like non linearity and heteroscedasticity 
+#first graph looks like heteroscedasticity 
 #second graph is OK, approx normal
 #standardized residuals bigger than 3 are outliers, no evidence of that
 
 #test heteroscedasticity statistically, p 0.0595
 bptest( Price ~ Distance + Size + Garage + Pool, data = train)
 
-#non linearity / heteroscedasticity is a problem, need to investigate solutions
-#look at log transformation of price
-#try nonlinear regression
+#heteroscedasticity is a problem, need to investigate solutions
+#try log transformation of price
+#what about quadratic terms?
+
 #reset grid
 par(mfrow = c(1,1))
+
+#try log transform of price 
+#results look v.similar, less evidence of heteroscedasticity but p still 0.12
+train <- train %>% mutate(log_price = log(Price))
+
+linear_model_log_price <- lm(log_price ~ Distance + Size + Garage + Pool,
+                   data = train)
+summary(linear_model_log_price)
+bptest( log_price ~ Distance + Size + Garage + Pool, data = train)
+par(mfrow = c(2,2)) 
+plot(linear_model_log_price)
+
+#look again at size / price relationship 
+ggplot(data = real_estate, aes(x=Price, y=Size)) +
+  geom_point() +
+  geom_smooth(method="loess", se=FALSE)
+
+#could argue this is non-linear, try quadratic size term
+#results almost same as first model and size^2 not an important term
+quadratic_model <- lm(Price ~ Distance + Size + Garage + Pool + I(Size^2),
+                      data = train)
+summary(quadratic_model)
+plot(quadratic_model)
+
+#compare the two models using ANOVA just in case
+#quadratic model isn't an improvement
+anova(linear_model, quadratic_model)
+
+
+#look at a tree to see which variables affect price
+#a lot of different factors here
+tree_model <- tree(Price~., data=train %>% select(!log_price))
+plot(tree_model)
+text(tree_model)
+
+#try adding Bedrooms to the model
+#adjusted R squared still 48%
+linear_model_2 <- lm(log_price ~ Distance + Size + Garage + Pool + Bedrooms,
+                     data = train)
+
+summary(linear_model_2)
+plot(linear_model_2)
+bptest(log_price ~ Distance + Size + Garage + Pool + Bedrooms, data = train)
+
+#how does this compare, model with bedrooms is an improvement
+anova(linear_model_log_price, linear_model_2)
+
+#try another model without distance (which wasn't significant)
+#adjusted R squared about the same
+#heteroscedascity no longer a problem
+linear_model_3 <- update(linear_model_2, ~.-Distance)
+summary(linear_model_3)
+plot(linear_model_3)
+bptest(log_price ~ Size + Garage + Pool + Bedrooms, data = train)
+
+#how does this model compare, not substantially better but simpler
+anova(linear_model_2, linear_model_3)
+
+#reset grid
+par(mfrow = c(1,1)) 
+
+#try chosen model on test dataset, need to scale first
+test$Size <- scale(test$Size)
+test$Distance <- scale(test$Distance)
+test <- test %>% mutate(log_price = log(Price))
+test$predictions <- predict(linear_model_3, test)
+
+#convert the predictions back to $000k
+test <- test %>% mutate(real_predictions = exp(test$predictions))
+
+#moderate correlation between predictions and actual, 0.6
+cor(test$real_predictions, test$Price)
+
+#min max accuracy, 0.40, close to 1 is good
+min_max_accuracy <- mean(min(test$Price,test$real_predictions) / 
+                           max(test$Price,test$real_predictions))
+
+#mape, 0.17, low is good
+#on average predictions are 17% away from actuals
+mape <- mean(abs((test$real_predictions - test$Price))/
+               test$Price) 
+
+#plot predictions agsinst actual, not great 
+plot(test$real_predictions, 
+     test$Price, 
+     xlab = "Predictions (000k)",
+     ylab = "Actual (000k)")
+abline(a = 0, b = 1)
 
 #### end ####
 
