@@ -42,7 +42,7 @@ There wasn't a noticeable relationship between price and township.
 ![image](https://github.com/user-attachments/assets/90a11ade-5883-4c2e-9621-daba2e214789)
 
 
-### [3] Statistical tests show there's evidence to conclude having a garage or a pool affects house price
+### [3] Statistical tests provide evidence that having a garage or a pool affects house price
 Performing a two sample t-test allowed us to reject the null hypothesis that the mean price between homes with and without a garage is the same (see results below). From the boxplot above we can see that homes with a garage have a higher mean. Note: we used Welch's test where variances were unequal. 
 
 ![image](https://github.com/user-attachments/assets/69d7fcd5-14af-4d88-a50e-709d5d63ddd6)
@@ -62,7 +62,7 @@ Correlation tests showed statistically significant relationships between price/d
 ![image](https://github.com/user-attachments/assets/4135a6b0-ff63-40f1-932e-8ef8af9a101c)
 
 
-### [4] First attempt at a linear regression model didn't explain enough of the variance in house price
+### [4] First attempt at a linear regression model doesn't explain enough price variation
 Based on the statistical tests in part 3 a linear regression model was fitted to predict house prices based on distance, size, garage and pool. The results are shown below.
 
 ![image](https://github.com/user-attachments/assets/9adceda5-1090-43ba-9600-8c54e2596045)
@@ -85,6 +85,7 @@ There was no significant improvement after removing distance (the non significan
 ![image](https://github.com/user-attachments/assets/2e8c273e-0d83-4d16-b2bf-528e3c2c3da3)
 
 The model was tested on new data and the Mean Absolute Percentage Error was 0.17. This meant, on average, predictions differed from actuals by 17%. The graph below shows this graphically. Not a bad first attempt but room for improvement.
+
 ![image](https://github.com/user-attachments/assets/f8eb03eb-8dc5-454c-8f7b-f28afb4e6abe)
 
 
