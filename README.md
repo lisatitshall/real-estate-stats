@@ -13,6 +13,7 @@ Explore a real estate dataset using EDA and statistics. The goal is to investiga
 - Step 6: Use two sample hypothesis tests to see whether homes with a pool or garage have a higher price
 - Step 7: Use ANOVA to see whether mean house price differs by township
 - Step 8: Use correlation to assess the relationship between price, size and distance from town
+- Step 9: Try fitting a linear regression model to predict house price from a combination of variables
 
 ## Findings
 
@@ -59,4 +60,31 @@ Correlation tests showed statistically significant relationships between price/d
 ![image](https://github.com/user-attachments/assets/2bf76d25-1689-4290-963b-766452affb3d)
 
 ![image](https://github.com/user-attachments/assets/4135a6b0-ff63-40f1-932e-8ef8af9a101c)
+
+
+### [4] First attempt at a linear regression model didn't explain enough of the variance in house price
+Based on the statistical tests in part 3 a linear regression model was fitted to predict house prices based on distance, size, garage and pool. The results are shown below.
+
+![image](https://github.com/user-attachments/assets/9adceda5-1090-43ba-9600-8c54e2596045)
+
+Only 45% of the variation in price was explained by these variables and there were signs of heteroscedasticity (see below). Heteroscedasticity persisted after a log transform of price.
+
+![image](https://github.com/user-attachments/assets/a1a330a6-bb3b-4afb-9c0b-89418fa64eef)
+
+Adding quadratic terms to the model showed no improvement and no significance. 
+
+The next step was to plot a tree to determine if any other variables were impacting price (see below).
+![image](https://github.com/user-attachments/assets/4e2d680d-a5cc-45f7-8410-175b6ab92c91)
+
+Bedrooms were added to the model and an ANOVA showed the model improvement. Heteroscedasticity was no longer a problem. 
+
+![image](https://github.com/user-attachments/assets/282342a5-d558-4fa0-ab07-27ca18614185)
+
+There was no significant improvement after removing distance (the non significant term) but a simpler model is preferable so this was our chosen model. 
+
+![image](https://github.com/user-attachments/assets/2e8c273e-0d83-4d16-b2bf-528e3c2c3da3)
+
+The model was tested on new data and the Mean Absolute Percentage Error was 0.17. This meant, on average, predictions differed from actuals by 17%. The graph below shows this graphically. Not a bad first attempt but room for improvement.
+![image](https://github.com/user-attachments/assets/f8eb03eb-8dc5-454c-8f7b-f28afb4e6abe)
+
 
