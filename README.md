@@ -67,7 +67,7 @@ Based on the statistical tests in part 3 a linear regression model was fitted to
 
 ![image](https://github.com/user-attachments/assets/9adceda5-1090-43ba-9600-8c54e2596045)
 
-Only 45% of the variation in price was explained by these variables and there were signs of heteroscedasticity (see below). Heteroscedasticity persisted after a log transform of price.
+Only 45% of the variation in price was explained by these variables, the Residual Standard Error was high and there were signs of heteroscedasticity (see below). Heteroscedasticity persisted after a log transform of price.
 
 ![image](https://github.com/user-attachments/assets/a1a330a6-bb3b-4afb-9c0b-89418fa64eef)
 
@@ -80,7 +80,7 @@ Bedrooms seemed to impact price and hadn't yet been included in the model. As me
 
 ![image](https://github.com/user-attachments/assets/282342a5-d558-4fa0-ab07-27ca18614185)
 
-There was no significant improvement after removing distance (the non significant term) but a simpler model is preferable so this was our chosen model. 
+There was a slight worsening after removing distance but it wasn't significant so this was our chosen model (predicting price based on size, garage, pool and bedrooms). 
 
 ![image](https://github.com/user-attachments/assets/2e8c273e-0d83-4d16-b2bf-528e3c2c3da3)
 
