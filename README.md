@@ -76,7 +76,7 @@ Adding quadratic terms to the model showed no improvement and no significance.
 The next step was to plot a tree to determine if any other variables were impacting price (see below).
 ![image](https://github.com/user-attachments/assets/4e2d680d-a5cc-45f7-8410-175b6ab92c91)
 
-Bedrooms were added to the model and an ANOVA showed the model improvement. Heteroscedasticity was no longer a problem. 
+Bedrooms seemed to impact price and hadn't yet been included in the model. As mentioned above only a small number of houses have lots of bedrooms so we checked that high values were represented in both train and test datasets and there were no influential points skewing the model. An ANOVA test showed the model improvement and heteroscedasticity was no longer a problem. 
 
 ![image](https://github.com/user-attachments/assets/282342a5-d558-4fa0-ab07-27ca18614185)
 
