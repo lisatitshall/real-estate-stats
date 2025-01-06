@@ -693,9 +693,11 @@ anova(linear_model_log_price, linear_model_2)
 linear_model_3 <- update(linear_model_2, ~.-Distance)
 summary(linear_model_3)
 plot(linear_model_3)
+plot(cooks.distance(linear_model_3), pch = 16, col = "blue")
 bptest(log_price ~ Size + Garage + Pool + Bedrooms, data = train)
 
-#how does this model compare, not substantially better but simpler
+#how does this model compare, bit worse but not significantly so
+#remove distance
 anova(linear_model_2, linear_model_3)
 
 #reset grid
@@ -713,9 +715,9 @@ test <- test %>% mutate(real_predictions = exp(test$predictions))
 #moderate correlation between predictions and actual, 0.6
 cor(test$real_predictions, test$Price)
 
-#min max accuracy, 0.40, close to 1 is good
-min_max_accuracy <- mean(min(test$Price,test$real_predictions) / 
-                           max(test$Price,test$real_predictions))
+#calculate mean squared error, high
+mse <- mean((test$Price - test$real_predictions)^2)
+rmse <- mse ^ 0.5
 
 #mape, 0.17, low is good
 #on average predictions are 17% away from actuals
@@ -729,7 +731,120 @@ plot(test$real_predictions,
      ylab = "Actual (000k)")
 abline(a = 0, b = 1)
 
+plot(cooks.distance(linear_model_3), pch = 16, col = "blue")
+
 #### end ####
 
+#### ANCOVA ####
+#Would there be any benefit to having multiple regression lines 
+#  for different categories?
 
+#Garage and Pool were both significant in the linear model
+#From visuals there was less price overlap for houses with/without garage
+
+#plot garage, size and price
+#slope more extreme for houses with Garage
+ggplot(data = real_estate, 
+       aes(x = Size, y = Price, color = Garage)) +
+  geom_point(data = real_estate) +
+  geom_smooth(method = "lm", se=FALSE) +
+  theme_bw()
+
+#plot pool, size and price
+#slopes look roughly equal 
+ggplot(data = real_estate, 
+aes(x = Size, y = Price, color = Pool)) +
+  geom_point(data = real_estate) +
+  geom_smooth(method = "lm", se=FALSE) +
+  theme_bw()
+
+#try ancova (checked that train has enough T/F Garage/Pool)
+ancova <- lm(log_price ~ Size * Garage * Bedrooms * Pool, data = train)
+stats::step(ancova)
+
+#step suggests an interaction between bedrooms and pool
+#try manually
+summary(ancova)
+#remove four way interaction
+ancova_2 <- update(ancova, ~. -Size:Garage:Bedrooms:Pool)
+anova(ancova, ancova_2)
+summary(ancova_2)
+#remove garage/bedrooms/pool interaction
+ancova_3 <- update(ancova_2, ~. -Garage:Bedrooms:Pool)
+anova(ancova_2, ancova_3)
+summary(ancova_3)
+#remove size/bedrooms/pool interaction
+ancova_4 <- update(ancova_3, ~. -Size:Bedrooms:Pool)
+anova(ancova_3, ancova_4)
+summary(ancova_4)
+#remove size/garage/bedrooms interaction
+ancova_5 <- update(ancova_4, ~. -Size:Garage:Bedrooms)
+anova(ancova_4, ancova_5)
+summary(ancova_5)
+#remove size/garage/pool interaction
+ancova_6 <- update(ancova_5, ~. -Size:Garage:Pool)
+anova(ancova_5, ancova_6)
+summary(ancova_6)
+#remove size/pool
+ancova_7 <- update(ancova_6, ~. -Size:Pool)
+anova(ancova_6, ancova_7)
+summary(ancova_7)
+#remove size/bedrooms interaction
+ancova_8 <- update(ancova_7, ~. -Size:Bedrooms)
+anova(ancova_7, ancova_8)
+summary(ancova_8)
+#remove size/garage interaction
+ancova_9 <- update(ancova_8, ~. -Size:Garage)
+anova(ancova_8, ancova_9)
+summary(ancova_9)
+#remove garage/bedrooms interaction
+ancova_10 <- update(ancova_9, ~. -Garage:Bedrooms)
+anova(ancova_9, ancova_10)
+summary(ancova_10)
+#remove garage/pool interaction
+ancova_11 <- update(ancova_10, ~. -Garage:Pool)
+anova(ancova_10, ancova_11)
+summary(ancova_11)
+#remove pool 
+ancova_12 <- update(ancova_11, ~. -Pool)
+anova(ancova_11, ancova_12)
+summary(ancova_12)
+#remove size just to see what happens
+#one removal too many
+ancova_13 <- update(ancova_12, ~. -Size)
+anova(ancova_12, ancova_13)
+
+#final model
+#adjusted R squared is up to 50% (up from 47%)
+summary(ancova_12)
+
+#Try on test dataset
+test$ancova_predictions <- predict(ancova_12, test)
+test <- test %>% mutate(ancova_real_predictions = exp(test$ancova_predictions))
+#0.63 correlation (0.6 with linear model)
+cor(test$ancova_real_predictions, test$Price)
+
+#calculate mean squared error, slightly lower for ancova
+mse_ancova <- mean((test$Price - test$ancova_real_predictions)^2)
+rmse_ancova <- mse_ancova ^ 0.5
+
+#mape, 0.17, same as linear regression
+#on average predictions are 17% away from actuals
+mape_ancova <- mean(abs((test$ancova_real_predictions - test$Price))/
+               test$Price) 
+
+#plot predictions against actual, not that different to linear model
+plot(test$ancova_real_predictions, 
+     test$Price, 
+     xlab = "Predictions (000k)",
+     ylab = "Actual (000k)",
+     main = "Predictions vs actual (ANCOVA)")
+abline(a = 0, b = 1)
+
+#smaller AIC is better, ANCOVA better
+AIC(ancova_12)
+AIC(linear_model_3)
+
+
+#### end ####
 
