@@ -652,14 +652,21 @@ bptest( log_price ~ Distance + Size + Garage + Pool, data = train)
 par(mfrow = c(2,2)) 
 plot(linear_model_log_price)
 
-#look again at size / price relationship 
-ggplot(data = real_estate, aes(x=Price, y=Size)) +
+#look again at size / price and distance / price relationship 
+ggplot(data = train, aes(x=log_price, y=Size)) +
   geom_point() +
-  geom_smooth(method="loess", se=FALSE)
+  geom_smooth(method="lm", se=FALSE) +
+  theme_bw()
+
+ggplot(data = train, aes(x=log_price, y=Distance)) +
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE) +
+  theme_bw()
 
 #could argue this is non-linear, try quadratic size term
-#results almost same as first model and size^2 not an important term
-quadratic_model <- lm(Price ~ Distance + Size + Garage + Pool + I(Size^2),
+#results almost same as first model and quadratic terms not significant
+quadratic_model <- lm(Price ~ Distance + Size + Garage + Pool + 
+                        I(Size^2) + I(Distance^2),
                       data = train)
 summary(quadratic_model)
 plot(quadratic_model)
@@ -667,7 +674,6 @@ plot(quadratic_model)
 #compare the two models using ANOVA just in case
 #quadratic model isn't an improvement
 anova(linear_model, quadratic_model)
-
 
 #look at a tree to see which variables affect price
 #a lot of different factors here
@@ -689,7 +695,7 @@ anova(linear_model_log_price, linear_model_2)
 
 #try another model without distance (which wasn't significant)
 #adjusted R squared about the same
-#heteroscedascity no longer a problem
+#heteroscedascity no longer a problem, normal errors, no influential points
 linear_model_3 <- update(linear_model_2, ~.-Distance)
 summary(linear_model_3)
 plot(linear_model_3)
@@ -817,6 +823,8 @@ anova(ancova_12, ancova_13)
 #final model
 #adjusted R squared is up to 50% (up from 47%)
 summary(ancova_12)
+#no heteroscedasticity, normal errors, no influential points
+plot(ancova_12)
 
 #Try on test dataset
 test$ancova_predictions <- predict(ancova_12, test)
@@ -844,7 +852,6 @@ abline(a = 0, b = 1)
 #smaller AIC is better, ANCOVA better
 AIC(ancova_12)
 AIC(linear_model_3)
-
 
 #### end ####
 
