@@ -849,9 +849,10 @@ plot(test$ancova_real_predictions,
      main = "Predictions vs actual (ANCOVA)")
 abline(a = 0, b = 1)
 
-#smaller AIC is better, ANCOVA better
+#smaller AIC is better, ANCOVA better (only just)
 AIC(ancova_12)
 AIC(linear_model_3)
+anova(linear_model_3, ancova_12)
 
 #### end ####
 
