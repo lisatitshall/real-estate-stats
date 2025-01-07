@@ -14,6 +14,7 @@ Explore a real estate dataset using EDA and statistics. The goal is to investiga
 - Step 7: Use ANOVA to see whether mean house price differs by township
 - Step 8: Use correlation to assess the relationship between price, size and distance from town
 - Step 9: Try fitting a linear regression model to predict house price from a combination of variables
+- Step 10: See if ANCOVA performs better than linear regression 
 
 ## Findings
 
@@ -87,5 +88,21 @@ There was a slight worsening after removing distance but it wasn't significant s
 The model was tested on new data and the Mean Absolute Percentage Error was 0.17. This meant, on average, predictions differed from actuals by 17%. The graph below shows this graphically. Not a bad first attempt but room for improvement.
 
 ![image](https://github.com/user-attachments/assets/f8eb03eb-8dc5-454c-8f7b-f28afb4e6abe)
+
+### [5] ANCOVA is a slight improvement on linear regression
+An ANCOVA model was fitted on the same significant variables used in the linear regression model. Variables were removed one at a time until only significant variables remained. The final model results can be seen below. 
+
+![image](https://github.com/user-attachments/assets/748b0fb0-ead3-4a41-8210-4b58444b3857)
+
+This time 50% of the variation in price can be explained (up from 47% in linear regression). There was no problem with heteroscedasticity, non-normal errors or influential points skewing the model. 
+
+The Mean Squared Error and AIC were slightly lower for the ANCOVA model but the Mean Absolute Percentage Error was the same at 0.17. The graph below plots the actual and predicted values. It isn't significantly different from the linear regression approach (confirmed in an ANOVA test). 
+
+![image](https://github.com/user-attachments/assets/481a7366-56d3-4c3a-a542-2f4d9493e157)
+
+![image](https://github.com/user-attachments/assets/c4ac1ecb-9275-407b-b46f-8d1090021f60)
+
+
+
 
 
