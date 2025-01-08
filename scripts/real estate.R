@@ -7,6 +7,8 @@ library(moments)
 #Bruesch-Pagan test for heteroscedasticity
 library(lmtest)
 library(tree)
+#gam
+library(mgcv)
 
 #read in the real estate data
 real_estate <- read_excel("data/GoodYearRealEstate.xls")
@@ -657,13 +659,19 @@ plot(linear_model_log_price)
 #look again at size / price and distance / price relationship 
 ggplot(data = train, aes(x=log_price, y=Size)) +
   geom_point() +
-  geom_smooth(method="lm", se=FALSE) +
+  geom_smooth(se=FALSE) +
   theme_bw()
 
 ggplot(data = train, aes(x=log_price, y=Distance)) +
   geom_point() +
-  geom_smooth(method="lm", se=FALSE) +
+  geom_smooth(se=FALSE) +
   theme_bw()
+
+ggplot(data = real_estate, aes(x=log2(Price), y=log2(Size))) +
+  geom_point() +
+  geom_smooth(se=FALSE) +
+  theme_bw()
+
 
 #could argue this is non-linear, try quadratic size term
 #results almost same as first model and quadratic terms not significant
@@ -932,3 +940,41 @@ anova(linear_model_3, ancova_12)
 
 #### end ####
 
+#### generalized additive model ####
+#To use a GAM we don't need to specify the shape of relationships
+#Let's look at the results with the same variables as ANCOVA model
+gam_model <- gam(log_price ~ s(Size) + Garage + s(Bedrooms, k= 3)
+                       + Bedrooms:Pool, data = train)
+
+#All terms are significant and more of the price variation is explained 
+#R2 52%
+#note that edf of size/bedrooms is 1 showing linear relationship
+summary(gam_model)
+
+#plots show linear relationships for all variables
+plot(gam_model, residuals = T, pch = 4, all.terms = TRUE, shade = TRUE)
+
+#checks: converged, degrees of freedom don't need increasing, graphs are fine
+par(mfrow = c(2,2))
+gam.check(gam_model)
+
+#bedroom can be approximated by size, a measure like collinearity
+concurvity(gam_model, full = TRUE)
+concurvity(gam_model, full = FALSE)
+
+#try a second model without bedrooms
+gam_model_2 <- gam(log_price ~ s(Size) + Garage + Bedrooms:Pool, data = train)
+
+#variables are significant, R2 51%
+summary(gam_model_2)
+plot(gam_model_2, residuals = T, pch = 4, all.terms = TRUE, shade = TRUE)
+gam.check(gam_model_2)
+
+#slightly worse result for second model but better to have simple model
+anova(gam_model, gam_model_2)
+
+#compare to ancova, model has same predictive power but ANCOVA is simpler
+#  to understand so stick with that
+anova(ancova_12, gam_model_2)
+
+#### end ####
