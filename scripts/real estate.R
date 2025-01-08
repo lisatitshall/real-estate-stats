@@ -629,7 +629,7 @@ plot(linear_model)
 
 #first graph looks like heteroscedasticity 
 #second graph is OK, approx normal
-#standardized residuals bigger than 3 are outliers, no evidence of that
+#no evidence of influential points
 
 #test heteroscedasticity statistically, p 0.0595
 bptest( Price ~ Distance + Size + Garage + Pool, data = train)
@@ -642,11 +642,13 @@ bptest( Price ~ Distance + Size + Garage + Pool, data = train)
 par(mfrow = c(1,1))
 
 #try log transform of price 
-#results look v.similar, less evidence of heteroscedasticity but p still 0.12
 train <- train %>% mutate(log_price = log(Price))
 
 linear_model_log_price <- lm(log_price ~ Distance + Size + Garage + Pool,
                    data = train)
+
+#assess model results
+#results look v.similar, less evidence of heteroscedasticity but p still 0.12
 summary(linear_model_log_price)
 bptest( log_price ~ Distance + Size + Garage + Pool, data = train)
 par(mfrow = c(2,2)) 
@@ -671,7 +673,7 @@ quadratic_model <- lm(Price ~ Distance + Size + Garage + Pool +
 summary(quadratic_model)
 plot(quadratic_model)
 
-#compare the two models using ANOVA just in case
+#compare the two models using ANOVA for interest sake
 #quadratic model isn't an improvement
 anova(linear_model, quadratic_model)
 
@@ -703,7 +705,7 @@ plot(cooks.distance(linear_model_3), pch = 16, col = "blue")
 bptest(log_price ~ Size + Garage + Pool + Bedrooms, data = train)
 
 #how does this model compare, bit worse but not significantly so
-#remove distance
+#remove distance, linear model 3 is chosen 
 anova(linear_model_2, linear_model_3)
 
 #reset grid
@@ -717,9 +719,56 @@ test$predictions <- predict(linear_model_3, test)
 
 #convert the predictions back to $000k
 test <- test %>% mutate(real_predictions = exp(test$predictions))
+test$errors <- test$real_predictions - test$Price
 
 #moderate correlation between predictions and actual, 0.6
 cor(test$real_predictions, test$Price)
+
+#what about correlation between errors and independent variables?
+#nothing numerical
+cor(test %>% select(Size, Bedrooms, errors))
+
+#what about garage, lots of overlap but garage estimates are lower
+plot(test$Garage, 
+     test$errors,
+     main = "Errors by Garage", 
+     xlab = "Garage",
+     ylab = "Errors (00k)")
+
+#check distributions of errors
+garage_test <- test %>% filter(Garage == T)  %>% select(errors)
+no_garage_test <- test %>% filter(Garage == FALSE)  %>% select(errors)
+
+#looks non-normal
+qqnorm(garage_test$errors, pch = 1, frame = FALSE)
+qqline(garage_test$errors, col = "blue", lwd = 2)
+qqnorm(no_garage_test$errors, pch = 1, frame = FALSE)
+qqline(no_garage_test$errors, col = "blue", lwd = 2)
+
+#use non parametric t-test 
+#some evidence to reject null
+#model is underestimating houses with a garage more often
+wilcox.test(errors ~ Garage, data = test)
+
+#what about pool, lots of overlap
+plot(test$Pool, 
+     test$errors,
+     main = "Errors by Pool", 
+     xlab = "Pool",
+     ylab = "Errors (00k)")
+
+pool_test <- test %>% filter(Pool == T)  %>% select(errors)
+no_pool_test <- test %>% filter(Pool == FALSE)  %>% select(errors)
+
+#check distribution, looks non-normal
+qqnorm(pool_test$errors, pch = 1, frame = FALSE)
+qqline(pool_test$errors, col = "blue", lwd = 2)
+qqnorm(no_pool_test$errors, pch = 1, frame = FALSE)
+qqline(no_pool_test$errors, col = "blue", lwd = 2)
+
+#use non parametric t-test 
+#some evidence to reject null
+wilcox.test(errors ~ Pool, data = test)
 
 #calculate mean squared error, high
 mse <- mean((test$Price - test$real_predictions)^2)
@@ -737,6 +786,7 @@ plot(test$real_predictions,
      ylab = "Actual (000k)")
 abline(a = 0, b = 1)
 
+#no influential points
 plot(cooks.distance(linear_model_3), pch = 16, col = "blue")
 
 #### end ####
@@ -828,9 +878,35 @@ plot(ancova_12)
 
 #Try on test dataset
 test$ancova_predictions <- predict(ancova_12, test)
-test <- test %>% mutate(ancova_real_predictions = exp(test$ancova_predictions))
+test$ancova_real_predictions <- exp(test$ancova_predictions)
+test$ancova_errors <- test$ancova_real_predictions - test$Price
+
 #0.63 correlation (0.6 with linear model)
 cor(test$ancova_real_predictions, test$Price)
+
+#what about correlation between independent variables and errors
+#nothing for numerical variables
+cor(test %>% select(errors, Bedrooms, Size))
+
+#what about garage? visually they overlap but with garage tends to underestimate
+plot(test$Garage, 
+     test$ancova_errors,
+     main = "ANCOVA errors by Garage", 
+     xlab = "Garage",
+     ylab = "ANCOVA Errors (00k)")
+
+garage_test_2 <- test %>% filter(Garage == T)  %>% select(ancova_errors)
+no_garage_test_2 <- test %>% filter(Garage == FALSE)  %>% select(ancova_errors)
+
+#distribution looks non-normal
+qqnorm(garage_test_2$ancova_errors, pch = 1, frame = FALSE)
+qqline(garage_test_2$ancova_errors, col = "blue", lwd = 2)
+qqnorm(no_garage_test_2$ancova_errors, pch = 1, frame = FALSE)
+qqline(no_garage_test_2$ancova_errors, col = "blue", lwd = 2)
+
+#use non parametric t-test 
+#some evidence to reject null
+wilcox.test(ancova_errors ~ Garage, data = test)
 
 #calculate mean squared error, slightly lower for ancova
 mse_ancova <- mean((test$Price - test$ancova_real_predictions)^2)
