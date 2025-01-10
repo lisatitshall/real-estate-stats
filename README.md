@@ -104,5 +104,6 @@ The Mean Squared Error and AIC were slightly lower for the ANCOVA model but the 
 
 Note that both the linear model and ANCOVA model showed some relationship between the errors and whether the house had a garage. More specifically, the models underestimated the price of houses with a garage. 
 
+A Generalized Additive Model was also fitted to the data but it had the same explanatory power as the ANCOVA model so the simpler ANCOVA model was the chosen model.
 
 
