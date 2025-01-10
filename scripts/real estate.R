@@ -35,7 +35,7 @@ plot(real_estate)
 plot(real_estate$Price) # quantitative variable, plotted against index
 plot(real_estate$Twnship) # categorical variable, bar chart
 plot(real_estate$Price, real_estate$Distance) # two quant variables, scatter
-plot(real_estate$Price, real_estate$Size) # two quant variables, scatter
+plot(real_estate$Size, real_estate$Price) # two quant variables, scatter
 #one quant, one category, boxplots
 plot(real_estate$Twnship, 
      real_estate$Price,
@@ -667,15 +667,10 @@ ggplot(data = train, aes(x=log_price, y=Distance)) +
   geom_smooth(se=FALSE) +
   theme_bw()
 
-ggplot(data = real_estate, aes(x=log2(Price), y=log2(Size))) +
-  geom_point() +
-  geom_smooth(se=FALSE) +
-  theme_bw()
-
 
 #could argue this is non-linear, try quadratic size term
 #results almost same as first model and quadratic terms not significant
-quadratic_model <- lm(Price ~ Distance + Size + Garage + Pool + 
+quadratic_model <- lm(Price ~  Garage + Pool + 
                         I(Size^2) + I(Distance^2),
                       data = train)
 summary(quadratic_model)
