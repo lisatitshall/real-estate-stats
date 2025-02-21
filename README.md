@@ -6,15 +6,14 @@ Explore a real estate dataset using EDA and statistics. The goal is to investiga
 ### Steps taken
 
 - Step 1: Import the data from Excel and explore datatypes
-- Step 2: Plot data to look at price distribution and see which attributes seem to affect price
+- Step 2: Plot data to look at price distribution and see which attributes affect price
 - Step 3: Use descriptive statistics to add numerical insight to plots
 - Step 4: Assess whether the normal distribution is a good approximation for price
-- Step 5: Construct a 95% confidence interval for price and use one sample hypothesis testing to test a statement about the mean price
-- Step 6: Use two sample hypothesis tests to see whether homes with a pool or garage have a higher price
-- Step 7: Use ANOVA to see whether mean house price differs by township
-- Step 8: Use correlation to assess the relationship between price, size and distance from town
-- Step 9: Try fitting a linear regression model to predict house price from a combination of variables
-- Step 10: See if ANCOVA performs better than linear regression 
+- Step 5: Use two sample t-tests to see whether homes with a pool or garage have a higher price
+- Step 6: Use ANOVA to see whether mean house price differs by township
+- Step 7: Use correlation to assess the relationship between price, size and distance from town
+- Step 8: Try fitting a linear regression model to predict house price from a combination of variables
+- Step 9: See if ANCOVA performs better than linear regression 
 
 ## Findings
 
@@ -33,15 +32,7 @@ The number of bedrooms and bathrooms only has a noticeable impact on price at th
 ![image](https://github.com/user-attachments/assets/93f80b06-bacb-453a-b742-5b707d5d4ac1)
 ![image](https://github.com/user-attachments/assets/4b376baf-9fc0-460d-8c28-dd94414bfc63)
 
-Other relationships were more surprising. For example, homes with pools had a lower median and the size only seemed to have a weak positive relationship with price.
-
-![image](https://github.com/user-attachments/assets/dc1b4205-732b-4139-a53b-fd1633a2b2ed)
-![image](https://github.com/user-attachments/assets/86ccf4f1-2710-428e-a76f-f40ffe4195d4)
-
-There wasn't a noticeable relationship between price and township. 
-
-![image](https://github.com/user-attachments/assets/90a11ade-5883-4c2e-9621-daba2e214789)
-
+Other relationships were more surprising. For example, homes with pools had a lower median and the size only seemed to have a weak positive relationship with price. There wasn't a noticeable relationship between price and township. 
 
 ### [3] Statistical tests provide evidence that having a garage or a pool affects house price
 Performing a two sample t-test allowed us to reject the null hypothesis that the mean price between homes with and without a garage is the same (see results below). From the boxplot above we can see that homes with a garage have a higher mean. Note: we used Welch's test where variances were unequal. 
